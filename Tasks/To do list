@@ -1,15 +1,55 @@
-const response = await fetch(
-  'https://tasks.googleapis.com/tasks/v1/lists/@default/tasks',
-  {
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    }
-  }
-);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My To-Do List</title>
+  <!-- Google Sign-In -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
 
-const data = await response.json();
-data.items.forEach(task => {
-  console.log(task.title);   // Assignment name
-  console.log(task.due);     // Due date
-  console.log(task.status);  // needsAction or completed
-});
+  <h1>My Classroom To-Do</h1>
+  <button onclick="signIn()">Sign in with Google</button>
+  <ul id="task-list"></ul>
+
+  <script>
+    const CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com'; // ← Replace this
+
+    let tokenClient;
+
+    window.onload = () => {
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: 'https://www.googleapis.com/auth/tasks.readonly',
+        callback: (response) => fetchTasks(response.access_token),
+      });
+    };
+
+    function signIn() {
+      tokenClient.requestAccessToken();
+    }
+
+    async function fetchTasks(accessToken) {
+      const res = await fetch(
+        'https://tasks.googleapis.com/tasks/v1/lists/@default/tasks?showCompleted=false',
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+
+      const data = await res.json();
+      const list = document.getElementById('task-list');
+
+      if (!data.items) {
+        list.innerHTML = '<li>No tasks found.</li>';
+        return;
+      }
+
+      data.items.forEach(task => {
+        const li = document.createElement('li');
+        li.textContent = `${task.title} — Due: ${task.due ? new Date(task.due).toLocaleDateString() : 'No due date'}`;
+        list.appendChild(li);
+      });
+    }
+  </script>
+
+</body>
+</html>
