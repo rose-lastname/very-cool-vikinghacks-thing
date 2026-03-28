@@ -1130,17 +1130,18 @@ function seedCourses() {
     {
       id: uid(), name: localStorage.getItem('courseName'), teacher: localStorage.getItem('courseTeacher'), color: '#b088f0',
       categories: [
-        { name: 'Speaking', weight: 30, assignments: [
-          { id: uid(), title: 'Oral Exam 1', score: 85, maxScore: 100, isWhatIf: false },
+        { name: localStorage.getItem('categoryName'),    weight: parseInt(localStorage.getItem('categoryWeight')), assignments: [
+          { id: uid(), title: localStorage.getItem('assignmentTitle'), score: parseInt(localStorage.getItem('assignmentScore')), maxScore: parseInt(localStorage.getItem('assignmentMaxScore')), isWhatIf: (stringToBoolean(localStorage.getItem('assignmentIsWhatIf'))) },
+          { id: uid(), title: localStorage.getItem('assignmentTitle'), score: parseInt(localStorage.getItem('assignmentScore')), maxScore: parseInt(localStorage.getItem('assignmentMaxScore')), isWhatIf: (stringToBoolean(localStorage.getItem('assignmentIsWhatIf'))) },
         ]},
-        { name: 'Written', weight: 40, assignments: [
-          { id: uid(), title: 'Essay 1', score: 88, maxScore: 100, isWhatIf: false },
+        { name: localStorage.getItem('categoryName'), weight: parseInt(localStorage.getItem('categoryWeight')), assignments: [
+          { id: uid(), title: localStorage.getItem('assignmentTitle'), score: parseInt(localStorage.getItem('assignmentScore')), maxScore: parseInt(localStorage.getItem('assignmentMaxScore')), isWhatIf: (stringToBoolean(localStorage.getItem('assignmentIsWhatIf'))) },
+          { id: uid(), title: localStorage.getItem('assignmentTitle'), score: parseInt(localStorage.getItem('assignmentScore')), maxScore: parseInt(localStorage.getItem('assignmentMaxScore')), isWhatIf: (stringToBoolean(localStorage.getItem('assignmentIsWhatIf'))) },
         ]},
-        { name: 'Vocab/Quizzes', weight: 30, assignments: [
-          { id: uid(), title: 'Vocab Quiz 1', score: 23, maxScore: 25, isWhatIf: false },
-          { id: uid(), title: 'Vocab Quiz 2', score: 22, maxScore: 25, isWhatIf: false },
+        { name: localStorage.getItem('categoryName'), weight: parseInt(localStorage.getItem('categoryWeight')), assignments: [
+          {  id: uid(), title: localStorage.getItem('assignmentTitle'), score: parseInt(localStorage.getItem('assignmentScore')), maxScore: parseInt(localStorage.getItem('assignmentMaxScore')), isWhatIf: (stringToBoolean(localStorage.getItem('assignmentIsWhatIf'))) }
         ]},
-      ]
+      ],
     },
   ];
   origCourses = JSON.parse(JSON.stringify(courses));
