@@ -187,6 +187,13 @@ let courses = [];
 let origCourses = [];
 let activeCourseId = null;
 
+function loadFromStorage() {
+  const saved = localStorage.getItem('courses');
+  const savedOrig = localStorage.getItem('origCourses');
+  if (saved) courses = JSON.parse(saved);
+  if (savedOrig) origCourses = JSON.parse(savedOrig);
+}
+
 // ── Grade Engine ───────────────────────────────────────────────────────────────
 function catGrade(cat) {
   const s = cat.assignments.filter(a => a.score !== null && a.score !== '' && a.maxScore > 0);
@@ -414,6 +421,7 @@ function submitAdd(catName) {
     ...cat,assignments:[...cat.assignments,{id:uid(),title,score,maxScore:max,isWhatIf:true}]
   })});
   localStorage.setItem('courses', JSON.stringify(courses));
+  localStorage.setItem('origCourses', JSON.stringify(origCourses));
   renderDetail();
 }
 
@@ -422,6 +430,7 @@ function editScore(catName, aId, val) {
     ...cat,assignments:cat.assignments.map(a=>a.id!==aId?a:{...a,score:val===''?null:parseFloat(val),isWhatIf:true})
   })});
   localStorage.setItem('courses', JSON.stringify(courses));
+  localStorage.setItem('origCourses', JSON.stringify(origCourses));
   renderDetail();
 }
 
@@ -430,6 +439,7 @@ function delAssign(catName, aId) {
     ...cat,assignments:cat.assignments.filter(a=>a.id!==aId)
   })});
   localStorage.setItem('courses', JSON.stringify(courses));
+  localStorage.setItem('origCourses', JSON.stringify(origCourses));
   renderDetail();
 }
 
@@ -438,6 +448,7 @@ function resetCourse() {
   if (!orig) return;
   courses = courses.map(c=>c.id!==activeCourseId?c:JSON.parse(JSON.stringify(orig)));
   localStorage.setItem('courses', JSON.stringify(courses));
+  localStorage.setItem('origCourses', JSON.stringify(origCourses));
   renderDetail();
 }
 
@@ -451,6 +462,7 @@ function backToDash() {
 function resetAll() {
   courses = JSON.parse(JSON.stringify(origCourses));
   localStorage.setItem('courses', JSON.stringify(courses));
+  localStorage.setItem('origCourses', JSON.stringify(origCourses));
   renderDashboard();
 }
 
@@ -498,8 +510,9 @@ function submitCourse() {
 
   const course = {id:uid(), name, teacher, categories};
   courses.push(course);
-  localStorage.setItem('courses', JSON.stringify(courses));
   origCourses.push(JSON.parse(JSON.stringify(course)));
+  localStorage.setItem('courses', JSON.stringify(courses));
+  localStorage.setItem('origCourses', JSON.stringify(origCourses));
   closeModal();
   renderDashboard();
 }
@@ -514,6 +527,7 @@ document.getElementById('add-modal').addEventListener('click', function(e) {
 });
 
 // ── Init ───────────────────────────────────────────────────────────────────────
+loadFromStorage();
 renderDashboard();
 </script>
 </body>
