@@ -1,0 +1,174 @@
+// ═══════════════════════════════════════════════════════
+//  state.js — shared application state & utilities
+// ═══════════════════════════════════════════════════════
+
+export function uid() {
+  return 'id' + Math.random().toString(36).slice(2, 9);
+}
+
+export function today() {
+  return new Date();
+}
+
+export function closeModal(id) {
+  document.getElementById(id).classList.add('hidden');
+}
+
+export function openModal(id) {
+  document.getElementById(id).classList.remove('hidden');
+}
+
+// ── Assignments ──────────────────────────────────────────
+export let assignments = [
+  { id: uid(), title: 'Ch. 7 Problem Set',   course: 'AP Calculus BC', dueOffset:  0, pts: 50,  type: 'Homework', done: false },
+  { id: uid(), title: 'DBQ Essay Draft',      course: 'AP US History',  dueOffset:  1, pts: 100, type: 'Essay',    done: false },
+  { id: uid(), title: 'Lab Report #4',        course: 'AP Chemistry',   dueOffset:  2, pts: 80,  type: 'Lab',      done: false },
+  { id: uid(), title: 'Vocab Quiz Unit 3',    course: 'AP Spanish',     dueOffset:  3, pts: 25,  type: 'Quiz',     done: false },
+  { id: uid(), title: 'Practice AP Exam',     course: 'AP Calculus BC', dueOffset:  5, pts: 0,   type: 'Test',     done: false },
+  { id: uid(), title: 'Reading Ch. 9-11',     course: 'AP US History',  dueOffset: -1, pts: 0,   type: 'Homework', done: false },
+];
+
+export function addAssignment(a) { assignments.push(a); }
+export function toggleAssignment(id) {
+  const a = assignments.find(a => a.id === id);
+  if (a) a.done = !a.done;
+}
+
+export function assignDueDate(a) {
+  const d = new Date();
+  d.setDate(d.getDate() + a.dueOffset);
+  return d;
+}
+
+export function dueDayStr(a) {
+  const diff = a.dueOffset;
+  const d = assignDueDate(a);
+  if (diff < 0)  return { label: 'Overdue',                                                         cls: 'overdue' };
+  if (diff === 0) return { label: 'Due Today',                                                       cls: 'today'   };
+  if (diff <= 2)  return { label: `Due in ${diff}d`,                                                 cls: 'soon'    };
+  return           { label: `Due ${d.toLocaleDateString('en-US',{month:'short',day:'numeric'})}`,   cls: 'later'   };
+}
+
+// ── To-Dos ───────────────────────────────────────────────
+export let todos = [
+  { id: uid(), text: 'Review calculus derivatives',    done: false, priority: 'high'   },
+  { id: uid(), text: 'Email Mr. Chen about retake',    done: false, priority: 'normal' },
+  { id: uid(), text: 'Print AP exam schedule',         done: true,  priority: 'low'    },
+];
+
+export function addTodo(text, priority = 'normal') {
+  todos.push({ id: uid(), text, done: false, priority });
+}
+export function toggleTodo(id) {
+  const t = todos.find(t => t.id === id);
+  if (t) t.done = !t.done;
+}
+export function deleteTodo(id) {
+  const i = todos.findIndex(t => t.id === id);
+  if (i !== -1) todos.splice(i, 1);
+}
+
+// ── Calendar Events ──────────────────────────────────────
+export let calEvents = [];
+
+export function addCalEvent(e) { calEvents.push(e); }
+
+// ── Resources ────────────────────────────────────────────
+export let resources = [
+  { id: uid(), name: 'AP Calc Formula Sheet',  icon: '📄', folder: 'AP Classes', modified: '2 days ago',  url: '' },
+  { id: uid(), name: 'APUSH Timeline 1800s',   icon: '📊', folder: 'AP Classes', modified: '5 days ago',  url: '' },
+  { id: uid(), name: 'Chemistry Lab Notes',    icon: '📝', folder: 'Notes',      modified: '1 day ago',   url: '' },
+  { id: uid(), name: 'Spanish Vocab Deck',     icon: '📋', folder: 'AP Classes', modified: '3 days ago',  url: '' },
+  { id: uid(), name: 'Campbell Biology 11e',   icon: '📚', folder: 'Textbooks',  modified: '1 week ago',  url: '' },
+  { id: uid(), name: '2022 AP Calc FRQ',       icon: '📄', folder: 'Practice',   modified: '4 days ago',  url: '' },
+  { id: uid(), name: 'APUSH Practice Exam',    icon: '📄', folder: 'Practice',   modified: '2 weeks ago', url: '' },
+  { id: uid(), name: "Barron's AP Chemistry",  icon: '📚', folder: 'Textbooks',  modified: '1 week ago',  url: '' },
+];
+
+export function addResource(r) { resources.push(r); }
+
+// ── Courses (GradeIf) ────────────────────────────────────
+export let courses = [];
+export let origCourses = [];
+
+export function seedCourses() {
+  courses = [
+    {
+      id: uid(), name: 'AP Calculus BC', teacher: 'Ms. Rivera', color: '#60b4f0',
+      categories: [
+        { name: 'Tests',    weight: 50, assignments: [
+          { id: uid(), title: 'Unit 1 Test', score: 88, maxScore: 100, isWhatIf: false },
+          { id: uid(), title: 'Unit 2 Test', score: 91, maxScore: 100, isWhatIf: false },
+        ]},
+        { name: 'Quizzes', weight: 30, assignments: [
+          { id: uid(), title: 'Quiz 1', score: 9, maxScore: 10, isWhatIf: false },
+          { id: uid(), title: 'Quiz 2', score: 8, maxScore: 10, isWhatIf: false },
+        ]},
+        { name: 'Homework', weight: 20, assignments: [
+          { id: uid(), title: 'Ch.1 HW', score: 48, maxScore: 50, isWhatIf: false },
+        ]},
+      ],
+    },
+    {
+      id: uid(), name: 'AP US History', teacher: 'Mr. Patel', color: '#f0c060',
+      categories: [
+        { name: 'Essays',  weight: 40, assignments: [
+          { id: uid(), title: 'LEQ Unit 2', score: 7, maxScore: 9, isWhatIf: false },
+        ]},
+        { name: 'Tests',   weight: 40, assignments: [
+          { id: uid(), title: 'Period 3 Test', score: 78, maxScore: 100, isWhatIf: false },
+          { id: uid(), title: 'Period 4 Test', score: 83, maxScore: 100, isWhatIf: false },
+        ]},
+        { name: 'Participation', weight: 20, assignments: [
+          { id: uid(), title: 'Q1 Participation', score: 18, maxScore: 20, isWhatIf: false },
+        ]},
+      ],
+    },
+    {
+      id: uid(), name: 'AP Chemistry', teacher: 'Dr. Nguyen', color: '#60f0a0',
+      categories: [
+        { name: 'Labs',     weight: 25, assignments: [
+          { id: uid(), title: 'Lab 1', score: 44, maxScore: 50, isWhatIf: false },
+          { id: uid(), title: 'Lab 2', score: 47, maxScore: 50, isWhatIf: false },
+        ]},
+        { name: 'Tests',    weight: 55, assignments: [
+          { id: uid(), title: 'Unit 1 Exam', score: 82, maxScore: 100, isWhatIf: false },
+        ]},
+        { name: 'Homework', weight: 20, assignments: [
+          { id: uid(), title: 'Ch.2 Problems', score: 38, maxScore: 40, isWhatIf: false },
+        ]},
+      ],
+    },
+    {
+      id: uid(), name: 'AP Spanish', teacher: 'Sra. Lopez', color: '#b088f0',
+      categories: [
+        { name: 'Speaking',      weight: 30, assignments: [
+          { id: uid(), title: 'Oral Exam 1', score: 85, maxScore: 100, isWhatIf: false },
+        ]},
+        { name: 'Written',       weight: 40, assignments: [
+          { id: uid(), title: 'Essay 1', score: 88, maxScore: 100, isWhatIf: false },
+        ]},
+        { name: 'Vocab/Quizzes', weight: 30, assignments: [
+          { id: uid(), title: 'Vocab Quiz 1', score: 23, maxScore: 25, isWhatIf: false },
+          { id: uid(), title: 'Vocab Quiz 2', score: 22, maxScore: 25, isWhatIf: false },
+        ]},
+      ],
+    },
+  ];
+  origCourses = JSON.parse(JSON.stringify(courses));
+}
+
+export function pushCourse(course) {
+  courses.push(course);
+  origCourses.push(JSON.parse(JSON.stringify(course)));
+}
+
+export function resetAllCourses() {
+  // wipe what-if mutations
+  courses.forEach((c, i) => {
+    const orig = origCourses[i];
+    if (orig && orig.id === c.id) {
+      c.categories = JSON.parse(JSON.stringify(orig.categories));
+    }
+  });
+}
