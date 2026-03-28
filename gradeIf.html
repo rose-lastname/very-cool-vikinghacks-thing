@@ -282,8 +282,10 @@ function renderDashboard() {
       </div>
       ${diffHtml}
       <div class="card-cats">${chips}</div>
-      <div class="card-cta">View &amp; edit →</div>
-    </button>`;
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="card-cta">View &amp; edit →</div>
+        `;
+
   });
 
   html += `<button class="add-course-card" onclick="openAddModal()">+ Add a class</button>`;
@@ -356,6 +358,8 @@ function renderDetail() {
         </div>
       </div>
       <button class="btn-ghost btn-danger" onclick="resetCourse()">Reset course</button>
+<button class="btn-ghost btn-danger" onclick="deleteCourse(activeCourseId)">Delete class</button>
+
     </div>
     <div class="detail-wrap">
       <div class="grade-hero">
@@ -447,8 +451,8 @@ function resetCourse() {
   const orig = origCourses.find(c=>c.id===activeCourseId);
   if (!orig) return;
   courses = courses.map(c=>c.id!==activeCourseId?c:JSON.parse(JSON.stringify(orig)));
-  localStorage.setItem('courses', JSON.stringify(courses));
-  localStorage.setItem('origCourses', JSON.stringify(origCourses));
+  //localStorage.setItem('courses', JSON.stringify(courses));
+  //localStorage.setItem('origCourses', JSON.stringify(origCourses));
   renderDetail();
 }
 
@@ -529,6 +533,16 @@ document.getElementById('add-modal').addEventListener('click', function(e) {
 // ── Init ───────────────────────────────────────────────────────────────────────
 loadFromStorage();
 renderDashboard();
+
+function deleteCourse(id) {
+  if (!confirm('Delete this class?')) return;
+  courses = courses.filter(c => c.id !== id);
+  origCourses = origCourses.filter(c => c.id !== id);
+  localStorage.setItem('courses', JSON.stringify(courses));
+  localStorage.setItem('origCourses', JSON.stringify(origCourses));
+  renderDashboard();
+}
+
 </script>
 </body>
 </html>
