@@ -1,1 +1,5 @@
+ok so this is where to  plan stuff
 
+rose- deals with getting class data
+
+data thing: user inputs data about classes (what class, past completed assignments + grades
