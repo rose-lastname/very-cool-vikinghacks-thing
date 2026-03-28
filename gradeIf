@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GradeIf — What-If Grade Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,300;9..144,600&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0f0f11; --surface: #17171a; --surface2: #1f1f23;
+  --border: #2a2a30; --border2: #38383f; --text: #e8e8ec;
+  --muted: #7a7a85; --accent: #c8f060; --accent-dim: rgba(200,240,96,0.1);
+  --red: #ff6b6b; --blue: #60b4f0; --amber: #f0c060; --green: #60f0a0;
+}
+body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; font-size: 14px; line-height: 1.6; min-height: 100vh; }
+
+.top-bar { display: flex; align-items: center; justify-content: space-between; padding: 1rem 2rem; border-bottom: 1px solid var(--border); background: var(--surface); position: sticky; top: 0; z-index: 10; flex-wrap: wrap; gap: 0.75rem; }
+.top-bar-left { display: flex; align-items: center; gap: 0.75rem; }
+.top-bar-right { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.logo { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 600; }
+.logo span { color: var(--accent); }
+.tagline { color: var(--muted); font-size: 0.75rem; }
+.overall-pill { display: flex; align-items: center; gap: 0.5rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 999px; padding: 0.3rem 0.9rem; font-size: 0.8rem; }
+
+button { cursor: pointer; font-family: 'DM Mono', monospace; font-size: 0.82rem; transition: all 0.15s; }
+.btn-ghost { background: transparent; border: 1px solid var(--border2); color: var(--muted); padding: 0.35rem 0.8rem; border-radius: 6px; }
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+.btn-danger:hover { border-color: var(--red) !important; color: var(--red) !important; }
+.btn-accent { background: var(--accent); color: #0f0f11; border: none; padding: 0.45rem 1rem; border-radius: 7px; font-weight: 500; }
+.btn-accent:hover { opacity: 0.85; }
+.btn-primary { background: var(--accent); color: #0f0f11; border: none; padding: 0.7rem 1.75rem; border-radius: 8px; font-size: 0.9rem; font-weight: 500; }
+.btn-primary:hover { opacity: 0.88; }
+
+.changes-bar { display: flex; align-items: center; gap: 0.6rem; background: var(--accent-dim); border-bottom: 1px solid rgba(200,240,96,0.2); padding: 0.45rem 2rem; font-size: 0.75rem; color: var(--accent); }
+.pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 1.5s infinite; flex-shrink: 0; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.hidden { display: none !important; }
+
+.main { padding: 2rem; max-width: 1100px; margin: 0 auto; }
+
+.course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 1rem; }
+.course-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; text-align: left; width: 100%; display: flex; flex-direction: column; gap: 0.6rem; transition: all 0.2s; }
+.course-card:hover { border-color: var(--border2); background: var(--surface2); transform: translateY(-2px); }
+.course-card.changed { border-color: rgba(200,240,96,0.4); }
+.card-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.card-name { font-family: 'Fraunces', serif; font-size: 1rem; font-weight: 600; }
+.card-teacher { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+.card-grade-block { text-align: right; }
+.card-pct { display: block; font-size: 1.1rem; font-weight: 500; }
+.card-letter { font-size: 0.72rem; color: var(--muted); }
+.card-diff { font-size: 0.75rem; font-weight: 500; }
+.card-diff.up { color: var(--green); } .card-diff.dn { color: var(--red); }
+.card-cats { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.cat-chip { font-size: 0.67rem; padding: 2px 8px; border: 1px solid var(--border); border-radius: 999px; color: var(--muted); }
+.card-cta { font-size: 0.75rem; color: var(--accent); }
+.add-course-card { background: transparent; border: 1px dashed var(--border2); border-radius: 12px; padding: 1.25rem; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 0.85rem; transition: all 0.2s; width: 100%; min-height: 120px; }
+.add-course-card:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+
+.grade-hero { display: flex; align-items: center; gap: 2rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem 2rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+.hero-pct { font-family: 'Fraunces', serif; font-size: 3rem; font-weight: 600; letter-spacing: -0.03em; }
+.hero-letter { font-size: 1.4rem; color: var(--muted); margin-left: 0.5rem; }
+.hero-diff { font-size: 0.85rem; font-weight: 500; }
+.hero-diff.up { color: var(--green); } .hero-diff.dn { color: var(--red); }
+.hero-orig { font-size: 0.72rem; color: var(--muted); }
+
+.box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
+.box-title { font-family: 'Fraunces', serif; font-size: 0.82rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.85rem; }
+
+.need-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; color: var(--muted); font-size: 0.82rem; margin-bottom: 0.75rem; }
+.need-result { padding: 0.55rem 1rem; border-radius: 7px; font-size: 0.85rem; font-weight: 500; }
+.need-result.ok { background: rgba(96,240,160,0.1); color: var(--green); border: 1px solid rgba(96,240,160,0.2); }
+.need-result.no { background: rgba(255,107,107,0.1); color: var(--red); border: 1px solid rgba(255,107,107,0.2); }
+
+input, select { background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 0.82rem; outline: none; padding: 0.35rem 0.5rem; }
+input:focus, select:focus { border-color: var(--accent); }
+.inp-sm { width: 64px; text-align: center; }
+.inp-full { width: 100%; padding: 0.5rem 0.75rem; }
+
+.cat-head { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.85rem; }
+.cat-head-name { font-family: 'Fraunces', serif; font-size: 1rem; font-weight: 600; flex: 1; }
+.cat-head-weight { font-size: 0.72rem; color: var(--muted); }
+.cat-head-grade { font-weight: 500; font-size: 0.88rem; }
+
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; padding: 0.35rem 0.5rem; font-size: 0.7rem; color: var(--muted); border-bottom: 1px solid var(--border); font-weight: 400; text-transform: uppercase; letter-spacing: 0.05em; }
+td { padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--border); font-size: 0.82rem; }
+tr:last-child td { border-bottom: none; }
+tr.whatif-row { background: rgba(200,240,96,0.04); }
+.wi-badge { display: inline-block; margin-left: 6px; font-size: 0.62rem; padding: 1px 6px; background: var(--accent-dim); color: var(--accent); border-radius: 999px; border: 1px solid rgba(200,240,96,0.25); }
+.score-cell input { width: 58px; text-align: center; }
+.del-btn { background: transparent; border: none; color: var(--muted); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; }
+.del-btn:hover { background: rgba(255,107,107,0.15); color: var(--red); }
+
+.add-dashed { width: 100%; background: transparent; border: 1px dashed var(--border2); border-radius: 8px; color: var(--muted); padding: 0.65rem; margin-top: 0.5rem; font-size: 0.82rem; }
+.add-dashed:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+.add-form { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-top: 0.5rem; }
+.add-form-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 1rem; }
+.modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 14px; padding: 1.75rem; width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 1rem; max-height: 90vh; overflow-y: auto; }
+.modal h2 { font-family: 'Fraunces', serif; font-size: 1.2rem; font-weight: 600; }
+.modal-row { display: flex; flex-direction: column; gap: 0.3rem; }
+.modal-row label { font-size: 0.75rem; color: var(--muted); }
+.modal-actions { display: flex; gap: 0.75rem; margin-top: 0.5rem; }
+.cat-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.cat-row { display: flex; gap: 0.5rem; align-items: center; }
+.cat-row input:first-child { flex: 1; }
+.weight-note { font-size: 0.72rem; color: var(--muted); }
+
+.ga { color: var(--green) !important; }
+.gb { color: var(--blue) !important; }
+.gc { color: var(--amber) !important; }
+.gd { color: var(--red) !important; }
+
+.detail-wrap { padding: 2rem; max-width: 800px; margin: 0 auto; }
+.detail-topbar { display: flex; align-items: center; justify-content: space-between; padding: 1rem 2rem; border-bottom: 1px solid var(--border); background: var(--surface); position: sticky; top: 0; z-index: 9; flex-wrap: wrap; gap: 0.5rem; }
+</style>
+</head>
+<body>
+
+<!-- Dashboard -->
+<div id="dashboard-view">
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <span class="logo">Grade<span>If</span></span>
+      <span class="tagline">what-if calculator</span>
+    </div>
+    <div class="top-bar-right">
+      <div class="overall-pill hidden" id="overall-pill">
+        <span id="overall-val" style="font-weight:500"></span>
+        <span id="overall-letter" style="color:var(--muted);font-size:0.72rem"></span>
+      </div>
+      <button class="btn-ghost btn-danger hidden" id="reset-all-btn" onclick="resetAll()">Reset all</button>
+    </div>
+  </div>
+  <div class="changes-bar hidden" id="changes-bar">
+    <div class="pulse"></div>
+    What-if mode active — grades reflect your hypothetical changes
+  </div>
+  <div class="main">
+    <div class="course-grid" id="course-grid"></div>
+  </div>
+</div>
+
+<!-- Detail view -->
+<div id="detail-view" class="hidden"></div>
+
+<!-- Add Course Modal -->
+<div class="modal-overlay hidden" id="add-modal">
+  <div class="modal">
+    <h2>Add a class</h2>
+    <div class="modal-row">
+      <label>Class name</label>
+      <input class="inp-full" id="new-name" placeholder="e.g. AP Computer Science A" />
+    </div>
+    <div class="modal-row">
+      <label>Teacher (optional)</label>
+      <input class="inp-full" id="new-teacher" placeholder="e.g. Mr. Anderson" />
+    </div>
+    <div class="modal-row">
+      <label>Grade categories <span class="weight-note">&nbsp;— weights must add to 100%</span></label>
+      <div class="cat-list" id="new-cats">
+        <div class="cat-row">
+          <input placeholder="Category name" value="Tests" />
+          <input type="number" class="inp-sm" value="60" /><span class="weight-note">%</span>
+          <button class="del-btn" onclick="this.parentElement.remove()">✕</button>
+        </div>
+        <div class="cat-row">
+          <input placeholder="Category name" value="Homework" />
+          <input type="number" class="inp-sm" value="40" /><span class="weight-note">%</span>
+          <button class="del-btn" onclick="this.parentElement.remove()">✕</button>
+        </div>
+      </div>
+      <button class="btn-ghost" style="margin-top:0.5rem;width:100%" onclick="addCatRow()">+ Add category</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="submitCourse()">Add class</button>
+      <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────────
+let courses = [];
+let origCourses = [];
+let activeCourseId = null;
+
+// ── Grade Engine ───────────────────────────────────────────────────────────────
+function catGrade(cat) {
+  const s = cat.assignments.filter(a => a.score !== null && a.score !== '' && a.maxScore > 0);
+  if (!s.length) return null;
+  return s.reduce((t,a) => t+a.score, 0) / s.reduce((t,a) => t+a.maxScore, 0) * 100;
+}
+
+function courseGrade(course) {
+  const active = course.categories.filter(c => catGrade(c) !== null);
+  if (!active.length) return null;
+  const tw = active.reduce((s,c) => s+c.weight, 0);
+  return active.reduce((s,c) => s + catGrade(c)*(c.weight/tw), 0);
+}
+
+function letter(p) {
+  if (p===null) return '—';
+  if (p>=93) return 'A'; if (p>=90) return 'A−'; if (p>=87) return 'B+';
+  if (p>=83) return 'B'; if (p>=80) return 'B−'; if (p>=77) return 'C+';
+  if (p>=73) return 'C'; if (p>=70) return 'C−'; if (p>=60) return 'D';
+  return 'F';
+}
+
+function gc(p) {
+  if (p===null) return ''; if (p>=90) return 'ga'; if (p>=80) return 'gb';
+  if (p>=70) return 'gc'; return 'gd';
+}
+
+function needed(course, catName, max, target) {
+  const clone = JSON.parse(JSON.stringify(course));
+  const cat = clone.categories.find(c=>c.name===catName);
+  if (!cat) return null;
+  let lo=0, hi=max;
+  for (let i=0;i<64;i++) {
+    const mid=(lo+hi)/2;
+    cat.assignments.push({id:'__p',score:mid,maxScore:max,isWhatIf:true});
+    const g=courseGrade(clone); cat.assignments.pop();
+    if (g<target) lo=mid; else hi=mid;
+  }
+  const n=Math.ceil((lo+hi)/2);
+  return n>max ? null : n;
+}
+
+function uid() { return 'id'+Math.random().toString(36).slice(2); }
+
+// ── Dashboard ──────────────────────────────────────────────────────────────────
+function renderDashboard() {
+  const grades = courses.map(courseGrade).filter(g=>g!==null);
+  const avg = grades.length ? grades.reduce((a,b)=>a+b,0)/grades.length : null;
+  const anyChanges = courses.some(c=>c.categories.some(cat=>cat.assignments.some(a=>a.isWhatIf)));
+
+  // Pill
+  const pill = document.getElementById('overall-pill');
+  if (avg!==null) {
+    pill.classList.remove('hidden');
+    document.getElementById('overall-val').textContent = avg.toFixed(1)+'%';
+    document.getElementById('overall-val').className = gc(avg);
+    document.getElementById('overall-letter').textContent = letter(avg);
+  } else pill.classList.add('hidden');
+
+  document.getElementById('changes-bar').classList.toggle('hidden', !anyChanges);
+  document.getElementById('reset-all-btn').classList.toggle('hidden', !anyChanges);
+
+  let html = '';
+  courses.forEach(course => {
+    const g = courseGrade(course);
+    const og = courseGrade(origCourses.find(c=>c.id===course.id));
+    const diff = (g!==null && og!==null) ? g-og : 0;
+    const changed = course.categories.some(cat=>cat.assignments.some(a=>a.isWhatIf));
+
+    const diffHtml = changed && Math.abs(diff)>0.001
+      ? `<div class="card-diff ${diff>0?'up':'dn'}">${diff>0?'▲':'▼'} ${Math.abs(diff).toFixed(2)}% from what-if</div>`
+      : '';
+
+    const chips = course.categories.map(c=>`<span class="cat-chip">${c.name} ${c.weight}%</span>`).join('');
+
+    html += `<button class="course-card ${changed?'changed':''}" onclick="openCourse('${course.id}')">
+      <div class="card-top">
+        <div>
+          <div class="card-name">${course.name}</div>
+          ${course.teacher?`<div class="card-teacher">${course.teacher}</div>`:''}
+        </div>
+        <div class="card-grade-block">
+          <span class="card-pct ${gc(g)}">${g!==null?g.toFixed(1)+'%':'—'}</span>
+          <span class="card-letter">${letter(g)}</span>
+        </div>
+      </div>
+      ${diffHtml}
+      <div class="card-cats">${chips}</div>
+      <div class="card-cta">View &amp; edit →</div>
+    </button>`;
+  });
+
+  html += `<button class="add-course-card" onclick="openAddModal()">+ Add a class</button>`;
+  document.getElementById('course-grid').innerHTML = html;
+}
+
+// ── Detail ─────────────────────────────────────────────────────────────────────
+function openCourse(id) {
+  activeCourseId = id;
+  document.getElementById('dashboard-view').classList.add('hidden');
+  document.getElementById('detail-view').classList.remove('hidden');
+  renderDetail();
+}
+
+function renderDetail() {
+  const course = courses.find(c=>c.id===activeCourseId);
+  const orig = origCourses.find(c=>c.id===activeCourseId);
+  if (!course) return;
+
+  const g = courseGrade(course);
+  const og = orig ? courseGrade(orig) : g;
+  const diff = (g!==null && og!==null) ? g-og : 0;
+
+  const diffHtml = Math.abs(diff)>0.001
+    ? `<div class="hero-diff ${diff>0?'up':'dn'}">
+        ${diff>0?'▲ +':'▼ '}${diff.toFixed(2)}%
+        <div class="hero-orig">vs real grade (${og!==null?og.toFixed(1):'—'}%)</div>
+       </div>` : '';
+
+  const catOpts = course.categories.map(c=>`<option>${c.name}</option>`).join('');
+
+  let catsHtml = '';
+  course.categories.forEach(cat => {
+    const cg = catGrade(cat);
+    const rows = cat.assignments.map(a => {
+      const pct = (a.score!==null&&a.score!=='') ? ((a.score/a.maxScore)*100).toFixed(1)+'%' : '—';
+      return `<tr class="${a.isWhatIf?'whatif-row':''}">
+        <td>${a.title}${a.isWhatIf?'<span class="wi-badge">what-if</span>':''}</td>
+        <td class="score-cell"><input type="number" value="${a.score??''}" min="0" max="${a.maxScore}"
+          onchange="editScore('${cat.name}','${a.id}',this.value)" /></td>
+        <td style="color:var(--muted)">${a.maxScore}</td>
+        <td style="color:var(--muted)">${pct}</td>
+        <td>${a.isWhatIf?`<button class="del-btn" onclick="delAssign('${cat.name}','${a.id}')">✕</button>`:''}</td>
+      </tr>`;
+    }).join('');
+
+    const formId = 'af-'+cat.name.replace(/\W/g,'_');
+    catsHtml += `<div class="box">
+      <div class="cat-head">
+        <span class="cat-head-name">${cat.name}</span>
+        <span class="cat-head-weight">${cat.weight}% of grade</span>
+        <span class="cat-head-grade ${gc(cg)}">${cg!==null?cg.toFixed(1)+'%':'No grades yet'}</span>
+      </div>
+      <table>
+        <thead><tr><th>Assignment</th><th>Score</th><th>Max</th><th>%</th><th></th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div id="${formId}"></div>
+      <button class="add-dashed" onclick="showAddForm('${cat.name}','${formId}')">+ Add hypothetical assignment</button>
+    </div>`;
+  });
+
+  document.getElementById('detail-view').innerHTML = `
+    <div class="detail-topbar">
+      <div class="top-bar-left">
+        <button class="btn-ghost" onclick="backToDash()">← Back</button>
+        <div>
+          <div style="font-family:'Fraunces',serif;font-size:1.05rem;font-weight:600">${course.name}</div>
+          ${course.teacher?`<div style="font-size:0.72rem;color:var(--muted)">${course.teacher}</div>`:''}
+        </div>
+      </div>
+      <button class="btn-ghost btn-danger" onclick="resetCourse()">Reset course</button>
+    </div>
+    <div class="detail-wrap">
+      <div class="grade-hero">
+        <div>
+          <span class="hero-pct ${gc(g)}">${g!==null?g.toFixed(2):'—'}%</span>
+          <span class="hero-letter">${letter(g)}</span>
+        </div>
+        ${diffHtml}
+      </div>
+      <div class="box">
+        <div class="box-title">What do I need?</div>
+        <div class="need-row">
+          <span>I want a</span>
+          <input type="number" class="inp-sm" id="tg" value="90" oninput="calcNeeded()" />
+          <span>% overall. My next</span>
+          <select id="tc" oninput="calcNeeded()">${catOpts}</select>
+          <span>assignment is out of</span>
+          <input type="number" class="inp-sm" id="tm" value="100" oninput="calcNeeded()" />
+          <span>pts</span>
+        </div>
+        <div class="need-result ok" id="need-out">calculating...</div>
+      </div>
+      ${catsHtml}
+    </div>`;
+
+  calcNeeded();
+}
+
+function calcNeeded() {
+  const course = courses.find(c=>c.id===activeCourseId);
+  const tg = parseFloat(document.getElementById('tg')?.value);
+  const tc = document.getElementById('tc')?.value;
+  const tm = parseFloat(document.getElementById('tm')?.value);
+  const el = document.getElementById('need-out');
+  if (!el||!course) return;
+  const n = needed(course, tc, tm, tg);
+  if (n===null) { el.className='need-result no'; el.textContent='❌ Not achievable with a single assignment'; }
+  else { el.className='need-result ok'; el.textContent=`✅ You need ${n} / ${tm} pts (${((n/tm)*100).toFixed(1)}%)`; }
+}
+
+function showAddForm(catName, formId) {
+  const el = document.getElementById(formId);
+  if (!el) return;
+  el.innerHTML = `
+    <div class="add-form">
+      <input id="at" placeholder="Assignment title" style="flex:1;min-width:120px" />
+      <input type="number" class="inp-sm" id="as" placeholder="Score" />
+      <span style="color:var(--muted)">/</span>
+      <input type="number" class="inp-sm" id="am" value="100" placeholder="Max" />
+    </div>
+    <div class="add-form-actions">
+      <button class="btn-accent" onclick="submitAdd('${catName}')">Add</button>
+      <button class="btn-ghost" onclick="document.getElementById('${formId}').innerHTML=''">Cancel</button>
+    </div>`;
+}
+
+function submitAdd(catName) {
+  const title = document.getElementById('at')?.value?.trim();
+  const score = parseFloat(document.getElementById('as')?.value);
+  const max = parseFloat(document.getElementById('am')?.value)||100;
+  if (!title||isNaN(score)) return;
+  courses = courses.map(c=>c.id!==activeCourseId?c:{...c,categories:c.categories.map(cat=>cat.name!==catName?cat:{
+    ...cat,assignments:[...cat.assignments,{id:uid(),title,score,maxScore:max,isWhatIf:true}]
+  })});
+  renderDetail();
+}
+
+function editScore(catName, aId, val) {
+  courses = courses.map(c=>c.id!==activeCourseId?c:{...c,categories:c.categories.map(cat=>cat.name!==catName?cat:{
+    ...cat,assignments:cat.assignments.map(a=>a.id!==aId?a:{...a,score:val===''?null:parseFloat(val),isWhatIf:true})
+  })});
+  renderDetail();
+}
+
+function delAssign(catName, aId) {
+  courses = courses.map(c=>c.id!==activeCourseId?c:{...c,categories:c.categories.map(cat=>cat.name!==catName?cat:{
+    ...cat,assignments:cat.assignments.filter(a=>a.id!==aId)
+  })});
+  renderDetail();
+}
+
+function resetCourse() {
+  const orig = origCourses.find(c=>c.id===activeCourseId);
+  if (!orig) return;
+  courses = courses.map(c=>c.id!==activeCourseId?c:JSON.parse(JSON.stringify(orig)));
+  renderDetail();
+}
+
+function backToDash() {
+  activeCourseId = null;
+  document.getElementById('detail-view').classList.add('hidden');
+  document.getElementById('dashboard-view').classList.remove('hidden');
+  renderDashboard();
+}
+
+function resetAll() {
+  courses = JSON.parse(JSON.stringify(origCourses));
+  renderDashboard();
+}
+
+// ── Add Course Modal ───────────────────────────────────────────────────────────
+function openAddModal() {
+  document.getElementById('new-name').value='';
+  document.getElementById('new-teacher').value='';
+  document.getElementById('new-cats').innerHTML=`
+    <div class="cat-row"><input placeholder="Category name" value="Tests"/>
+      <input type="number" class="inp-sm" value="60"/><span class="weight-note">%</span>
+      <button class="del-btn" onclick="this.parentElement.remove()">✕</button></div>
+    <div class="cat-row"><input placeholder="Category name" value="Homework"/>
+      <input type="number" class="inp-sm" value="40"/><span class="weight-note">%</span>
+      <button class="del-btn" onclick="this.parentElement.remove()">✕</button></div>`;
+  document.getElementById('add-modal').classList.remove('hidden');
+  document.getElementById('new-name').focus();
+}
+
+function addCatRow() {
+  const row = document.createElement('div');
+  row.className='cat-row';
+  row.innerHTML=`<input placeholder="Category name"/>
+    <input type="number" class="inp-sm" value="0"/><span class="weight-note">%</span>
+    <button class="del-btn" onclick="this.parentElement.remove()">✕</button>`;
+  document.getElementById('new-cats').appendChild(row);
+}
+
+function submitCourse() {
+  const name = document.getElementById('new-name').value.trim();
+  if (!name) { alert('Please enter a class name.'); return; }
+  const teacher = document.getElementById('new-teacher').value.trim();
+
+  const rows = document.getElementById('new-cats').querySelectorAll('.cat-row');
+  const categories = [];
+  let total = 0;
+  rows.forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    const n = inputs[0].value.trim();
+    const w = parseFloat(inputs[1].value)||0;
+    if (n && w>0) { categories.push({name:n,weight:w,assignments:[]}); total+=w; }
+  });
+
+  if (!categories.length) { alert('Add at least one category.'); return; }
+  if (Math.abs(total-100)>0.5) { alert(`Weights must add to 100%. Currently: ${total}%`); return; }
+
+  const course = {id:uid(), name, teacher, categories};
+  courses.push(course);
+  origCourses.push(JSON.parse(JSON.stringify(course)));
+  closeModal();
+  renderDashboard();
+}
+
+function closeModal() {
+  document.getElementById('add-modal').classList.add('hidden');
+}
+
+// close modal on overlay click
+document.getElementById('add-modal').addEventListener('click', function(e) {
+  if (e.target===this) closeModal();
+});
+
+// ── Init ───────────────────────────────────────────────────────────────────────
+renderDashboard();
+</script>
+</body>
+</html>
