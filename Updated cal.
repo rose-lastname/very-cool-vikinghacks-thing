@@ -1,0 +1,192 @@
+// ═══════════════════════════════════════════════════════
+//  calendar.js — Calendar page & mini-calendar widget
+// ═══════════════════════════════════════════════════════
+
+import { uid, today, openModal, closeModal, calEvents, addCalEvent, assignments, assignDueDate } from './state.js';
+
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DOWS_SHORT = ['S','M','T','W','T','F','S'];
+const DOWS_FULL  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+let calYear, calMonth, selectedCalDay = null;
+
+<button onclick="calNav(-1)">← Prev</button>
+<span id="cal-full-month"></span>
+<button onclick="calNav(1)">Next →</button>
+
+// ── Init ────────────────────────────────────────────────
+export function initCalendar() {
+  const now = today();
+  calYear  = now.getFullYear();
+  calMonth = now.getMonth();
+}
+
+// ── Navigation ──────────────────────────────────────────
+export function calNav(dir) {
+  calMonth += dir;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth <  0) { calMonth = 11; calYear--; }
+  renderFullCal();
+}
+
+// ── Mini calendar (Overview sidebar) ────────────────────
+export function renderMiniCal() {
+  const el = document.getElementById('mini-cal');
+  if (!el) return;
+
+  const now  = today();
+  const yr   = now.getFullYear();
+  const mo   = now.getMonth();
+  const first = new Date(yr, mo, 1).getDay();
+  const days  = new Date(yr, mo + 1, 0).getDate();
+
+  // collect days that have events or due assignments
+  const eventDays = new Set(
+    calEvents
+      .filter(e => { const d = new Date(e.date + 'T00:00:00'); return d.getFullYear() === yr && d.getMonth() === mo; })
+      .map(e => parseInt(e.date.split('-')[2]))
+  );
+  assignments.forEach(a => {
+    const d = assignDueDate(a);
+    if (d.getFullYear() === yr && d.getMonth() === mo) eventDays.add(d.getDate());
+  });
+
+  const todayDate = now.getDate();
+  let html = `
+    <div class="cal-header">
+      <div class="cal-month">${MONTHS[mo]} ${yr}</div>
+    </div>
+    <div class="cal-grid">
+      ${DOWS_SHORT.map(d => `<div class="cal-dow">${d}</div>`).join('')}
+      ${Array(first).fill('<div></div>').join('')}`;
+
+  for (let d = 1; d <= days; d++) {
+    html += `<div class="cal-day ${d === todayDate ? 'today' : ''} ${eventDays.has(d) ? 'has-event' : ''}">${d}</div>`;
+  }
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+// ── Full calendar page ───────────────────────────────────
+export function renderFullCal() {
+  document.getElementById('cal-full-month').textContent = `${MONTHS[calMonth]} ${calYear}`;
+
+  const first = new Date(calYear, calMonth, 1).getDay();
+  const days  = new Date(calYear, calMonth + 1, 0).getDate();
+  const now   = today();
+
+  // index events by day
+  const byDay = {};
+  calEvents.forEach(e => {
+    const d = new Date(e.date + 'T00:00:00');
+    if (d.getFullYear() === calYear && d.getMonth() === calMonth) {
+      const day = d.getDate();
+      (byDay[day] = byDay[day] || []).push(e);
+    }
+  });
+  assignments.forEach(a => {
+    const d = assignDueDate(a);
+    if (d.getFullYear() === calYear && d.getMonth() === calMonth) {
+      const day = d.getDate();
+      (byDay[day] = byDay[day] || []).push({
+        title: a.title,
+        type: 'Assignment',
+        color: 'var(--blue)',
+        _assignment: true,
+      });
+    }
+  });
+
+  const el = document.getElementById('full-cal-grid');
+
+  // ← CHANGED: Sun (i=0) and Sat (i=6) render in red
+  let html  = DOWS_FULL.map((d, i) => `
+    <div style="text-align:center;font-size:0.65rem;color:${i === 0 || i === 6 ? '#ef4444' : 'var(--muted)'};text-transform:uppercase;letter-spacing:0.08em;padding:0.25rem 0;">${d}</div>
+  `).join('');
+  html += Array(first).fill('<div></div>').join('');
+
+  for (let d = 1; d <= days; d++) {
+    const isToday = d === now.getDate() && calMonth === now.getMonth() && calYear === now.getFullYear();
+    const isSel   = selectedCalDay === d;
+    const evs     = byDay[d] || [];
+
+    html += `
+      <div
+        onclick="window._calSelectDay(${d})"
+        style="
+          min-height:72px;padding:0.4rem;cursor:pointer;transition:border-color 0.1s;
+          border:1px solid ${isSel ? 'var(--accent)' : isToday ? 'rgba(200,240,96,0.3)' : 'var(--border)'};
+          border-radius:8px;
+          background:${isToday ? 'var(--accent-dim)' : isSel ? 'var(--surface2)' : 'var(--surface)'};
+        "
+      >
+        <div style="font-size:0.75rem;font-weight:${isToday ? '600' : '400'};color:${isToday ? 'var(--accent)' : 'var(--text)'};">${d}</div>
+        ${evs.slice(0, 2).map(e => `
+          <div style="font-size:0.6rem;background:${e.color || 'var(--blue)'};color:#0c0c0e;border-radius:3px;padding:1px 4px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${e.title}</div>
+        `).join('')}
+        ${evs.length > 2 ? `<div style="font-size:0.6rem;color:var(--muted)">+${evs.length - 2} more</div>` : ''}
+      </div>`;
+  }
+  el.innerHTML = html;
+
+  if (selectedCalDay) _showDayEvents(selectedCalDay, byDay);
+}
+
+function _showDayEvents(d, byDay) {
+  const el = document.getElementById('events-for-day');
+  const evs = byDay[d] || [];
+  if (!evs.length) { el.innerHTML = ''; return; }
+
+  el.innerHTML = `
+    <div style="font-family:'Fraunces',serif;font-size:0.85rem;font-weight:600;margin-bottom:0.5rem;">
+      ${new Date(calYear, calMonth, d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+    </div>
+    <div style="display:flex;flex-direction:column;gap:0.4rem;">
+      ${evs.map(e => `
+        <div style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0.75rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;">
+          <div style="width:6px;height:6px;border-radius:50%;background:${e.color || 'var(--purple)'}"></div>
+          <div style="font-size:0.8rem;">${e.title}</div>
+          <div style="font-size:0.68rem;color:var(--muted);margin-left:auto">${e.type}${e._assignment ? ' · Due' : ''}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+// expose to inline onclick
+window._calSelectDay = function(d) {
+  selectedCalDay = d;
+  // rebuild byDay inline for display
+  const byDay = {};
+  calEvents.forEach(e => {
+    const dt = new Date(e.date + 'T00:00:00');
+    if (dt.getFullYear() === calYear && dt.getMonth() === calMonth) {
+      const day = dt.getDate();
+      (byDay[day] = byDay[day] || []).push(e);
+    }
+  });
+  assignments.forEach(a => {
+    const dt = assignDueDate(a);
+    if (dt.getFullYear() === calYear && dt.getMonth() === calMonth) {
+      const day = dt.getDate();
+      (byDay[day] = byDay[day] || []).push({ title: a.title, type: 'Assignment', color: 'var(--amber)', _assignment: true });
+    }
+  });
+  renderFullCal();
+};
+
+// ── Add event modal ──────────────────────────────────────
+export function openAddEvent() {
+  document.getElementById('event-title').value = '';
+  document.getElementById('event-date').value  = today().toISOString().slice(0, 10);
+  openModal('event-modal');
+}
+
+export function submitEvent() {
+  const title = document.getElementById('event-title').value.trim();
+  if (!title) return;
+  const date  = document.getElementById('event-date').value;
+  const type  = document.getElementById('event-type').value;
+  addCalEvent({ id: uid(), title, date, type });
+  closeModal('event-modal');
+  renderFullCal();
+  renderMiniCal();
+}
