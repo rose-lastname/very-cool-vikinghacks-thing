@@ -818,12 +818,13 @@ input:focus, select:focus { border-color: var(--accent); }
   </div>
 
   <!-- ── Grades / GradeIf Page ── -->
-  <div class="page" id="page-grades">
-    <div id="grades-dashboard-view">
-      <div class="course-grid" id="course-grid"></div>
-    </div>
-    <div id="grades-detail-view" class="hidden"></div>
-  </div>
+ <script>
+  fetch('gradeIf.html')
+    .then(response => response.text())
+    .then(html => {
+      document.getElementById('gradeIf-container').innerHTML = html;
+    });
+</script>
 
   <!-- ── Classroom Page ── -->
   <div class="page" id="page-classroom">
@@ -1079,53 +1080,55 @@ let resources = [
 function seedCourses() {
   courses = [
     {
-      id: uid(), name: 'AP Calculus BC', teacher: 'Ms. Rivera', color: '#60b4f0',
+      id: uid(), name: localStorage.getItem('courseName'), teacher: localStorage.getItem('courseTeacher'), color: '#60b4f0',
       categories: [
-        { name: 'Tests', weight: 50, assignments: [
-          { id: uid(), title: 'Unit 1 Test', score: 88, maxScore: 100, isWhatIf: false },
-          { id: uid(), title: 'Unit 2 Test', score: 91, maxScore: 100, isWhatIf: false },
+        { name: localStorage.getItem('categoryName'),    weight: parseInt(localStorage.getItem('categoryWeight')), assignments: [
+          { id: uid(), title: localStorage.getItem('assignmentTitle'), score: parseInt(localStorage.getItem('assignmentScore')), maxScore: parseInt(localStorage.getItem('assignmentMaxScore')), isWhatIf: (stringToBoolean(localStorage.getItem('assignmentIsWhatIf'))) },
+          { id: uid(), title: localStorage.getItem('assignmentTitle'), score: parseInt(localStorage.getItem('assignmentScore')), maxScore: parseInt(localStorage.getItem('assignmentMaxScore')), isWhatIf: (stringToBoolean(localStorage.getItem('assignmentIsWhatIf'))) },
         ]},
-        { name: 'Quizzes', weight: 30, assignments: [
-          { id: uid(), title: 'Quiz 1', score: 9, maxScore: 10, isWhatIf: false },
-          { id: uid(), title: 'Quiz 2', score: 8, maxScore: 10, isWhatIf: false },
+        { name: localStorage.getItem('categoryName'), weight: parseInt(localStorage.getItem('categoryWeight')), assignments: [
+          { id: uid(), title: localStorage.getItem('assignmentTitle'), score: parseInt(localStorage.getItem('assignmentScore')), maxScore: parseInt(localStorage.getItem('assignmentMaxScore')), isWhatIf: (stringToBoolean(localStorage.getItem('assignmentIsWhatIf'))) },
+          { id: uid(), title: localStorage.getItem('assignmentTitle'), score: parseInt(localStorage.getItem('assignmentScore')), maxScore: parseInt(localStorage.getItem('assignmentMaxScore')), isWhatIf: (stringToBoolean(localStorage.getItem('assignmentIsWhatIf'))) },
         ]},
-        { name: 'Homework', weight: 20, assignments: [
-          { id: uid(), title: 'Ch.1 HW', score: 48, maxScore: 50, isWhatIf: false },
+        { name: localStorage.getItem('categoryName'), weight: parseInt(localStorage.getItem('categoryWeight')), assignments: [
+          {  id: uid(), title: localStorage.getItem('assignmentTitle'), score: parseInt(localStorage.getItem('assignmentScore')), maxScore: parseInt(localStorage.getItem('assignmentMaxScore')), isWhatIf: (stringToBoolean(localStorage.getItem('assignmentIsWhatIf'))) }
         ]},
-      ]
+      ],
     },
     {
-      id: uid(), name: 'AP US History', teacher: 'Mr. Patel', color: '#f0c060',
+      id: uid(), name: localStorage.getItem('courseName'), teacher: localStorage.getItem('courseTeacher'), color: '#f0c060',
       categories: [
-        { name: 'Essays', weight: 40, assignments: [
-          { id: uid(), title: 'LEQ Unit 2', score: 7, maxScore: 9, isWhatIf: false },
+        { name: localStorage.getItem('categoryName'),    weight: parseInt(localStorage.getItem('categoryWeight')), assignments: [
+          { id: uid(), title: localStorage.getItem('assignmentTitle'), score: parseInt(localStorage.getItem('assignmentScore')), maxScore: parseInt(localStorage.getItem('assignmentMaxScore')), isWhatIf: (stringToBoolean(localStorage.getItem('assignmentIsWhatIf'))) },
+          { id: uid(), title: localStorage.getItem('assignmentTitle'), score: parseInt(localStorage.getItem('assignmentScore')), maxScore: parseInt(localStorage.getItem('assignmentMaxScore')), isWhatIf: (stringToBoolean(localStorage.getItem('assignmentIsWhatIf'))) },
         ]},
-        { name: 'Tests', weight: 40, assignments: [
-          { id: uid(), title: 'Period 3 Test', score: 78, maxScore: 100, isWhatIf: false },
-          { id: uid(), title: 'Period 4 Test', score: 83, maxScore: 100, isWhatIf: false },
+        { name: localStorage.getItem('categoryName'), weight: parseInt(localStorage.getItem('categoryWeight')), assignments: [
+          { id: uid(), title: localStorage.getItem('assignmentTitle'), score: parseInt(localStorage.getItem('assignmentScore')), maxScore: parseInt(localStorage.getItem('assignmentMaxScore')), isWhatIf: (stringToBoolean(localStorage.getItem('assignmentIsWhatIf'))) },
+          { id: uid(), title: localStorage.getItem('assignmentTitle'), score: parseInt(localStorage.getItem('assignmentScore')), maxScore: parseInt(localStorage.getItem('assignmentMaxScore')), isWhatIf: (stringToBoolean(localStorage.getItem('assignmentIsWhatIf'))) },
         ]},
-        { name: 'Participation', weight: 20, assignments: [
-          { id: uid(), title: 'Q1 Participation', score: 18, maxScore: 20, isWhatIf: false },
+        { name: localStorage.getItem('categoryName'), weight: parseInt(localStorage.getItem('categoryWeight')), assignments: [
+          {  id: uid(), title: localStorage.getItem('assignmentTitle'), score: parseInt(localStorage.getItem('assignmentScore')), maxScore: parseInt(localStorage.getItem('assignmentMaxScore')), isWhatIf: (stringToBoolean(localStorage.getItem('assignmentIsWhatIf'))) }
         ]},
-      ]
+      ],
     },
     {
-      id: uid(), name: 'AP Chemistry', teacher: 'Dr. Nguyen', color: '#60f0a0',
+      id: uid(), name: localStorage.getItem('courseName'), teacher: localStorage.getItem('courseTeacher'), color: '#60f0a0',
       categories: [
-        { name: 'Labs', weight: 25, assignments: [
-          { id: uid(), title: 'Lab 1', score: 44, maxScore: 50, isWhatIf: false },
-          { id: uid(), title: 'Lab 2', score: 47, maxScore: 50, isWhatIf: false },
+        { name: localStorage.getItem('categoryName'),    weight: parseInt(localStorage.getItem('categoryWeight')), assignments: [
+          { id: uid(), title: localStorage.getItem('assignmentTitle'), score: parseInt(localStorage.getItem('assignmentScore')), maxScore: parseInt(localStorage.getItem('assignmentMaxScore')), isWhatIf: (stringToBoolean(localStorage.getItem('assignmentIsWhatIf'))) },
+          { id: uid(), title: localStorage.getItem('assignmentTitle'), score: parseInt(localStorage.getItem('assignmentScore')), maxScore: parseInt(localStorage.getItem('assignmentMaxScore')), isWhatIf: (stringToBoolean(localStorage.getItem('assignmentIsWhatIf'))) },
         ]},
-        { name: 'Tests', weight: 55, assignments: [
-          { id: uid(), title: 'Unit 1 Exam', score: 82, maxScore: 100, isWhatIf: false },
+        { name: localStorage.getItem('categoryName'), weight: parseInt(localStorage.getItem('categoryWeight')), assignments: [
+          { id: uid(), title: localStorage.getItem('assignmentTitle'), score: parseInt(localStorage.getItem('assignmentScore')), maxScore: parseInt(localStorage.getItem('assignmentMaxScore')), isWhatIf: (stringToBoolean(localStorage.getItem('assignmentIsWhatIf'))) },
+          { id: uid(), title: localStorage.getItem('assignmentTitle'), score: parseInt(localStorage.getItem('assignmentScore')), maxScore: parseInt(localStorage.getItem('assignmentMaxScore')), isWhatIf: (stringToBoolean(localStorage.getItem('assignmentIsWhatIf'))) },
         ]},
-        { name: 'Homework', weight: 20, assignments: [
-          { id: uid(), title: 'Ch.2 Problems', score: 38, maxScore: 40, isWhatIf: false },
+        { name: localStorage.getItem('categoryName'), weight: parseInt(localStorage.getItem('categoryWeight')), assignments: [
+          {  id: uid(), title: localStorage.getItem('assignmentTitle'), score: parseInt(localStorage.getItem('assignmentScore')), maxScore: parseInt(localStorage.getItem('assignmentMaxScore')), isWhatIf: (stringToBoolean(localStorage.getItem('assignmentIsWhatIf'))) }
         ]},
-      ]
+      ],
     },
     {
-      id: uid(), name: 'AP Spanish', teacher: 'Sra. Lopez', color: '#b088f0',
+      id: uid(), name: localStorage.getItem('courseName'), teacher: localStorage.getItem('courseTeacher'), color: '#b088f0',
       categories: [
         { name: 'Speaking', weight: 30, assignments: [
           { id: uid(), title: 'Oral Exam 1', score: 85, maxScore: 100, isWhatIf: false },
