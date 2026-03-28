@@ -87,7 +87,7 @@ export function renderFullCal() {
       (byDay[day] = byDay[day] || []).push({
         title: a.title,
         type: 'Assignment',
-        color: 'var(--amber)',
+        color: 'var(--blue)',
         _assignment: true,
       });
     }
