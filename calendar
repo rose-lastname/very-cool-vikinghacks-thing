@@ -161,7 +161,7 @@ window._calSelectDay = function(d) {
     const dt = assignDueDate(a);
     if (dt.getFullYear() === calYear && dt.getMonth() === calMonth) {
       const day = dt.getDate();
-      (byDay[day] = byDay[day] || []).push({ title: a.title, type: 'Assignment', color: 'var(--amber)', _assignment: true });
+      (byDay[day] = byDay[day] || []).push({ title: a.title, type: 'Assignment', color: 'var(--blue)', _assignment: true });
     }
   });
   renderFullCal();
